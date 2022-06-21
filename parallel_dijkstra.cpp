@@ -11,11 +11,14 @@
 #include <boost/pending/relaxed_heap.hpp>
 #include <iterator>
 #include <limits>
+#include <iostream>
 
 #define INT_MAX std::numeric_limits<int>::max()
 
 using std::vector;
 using std::pair;
+using std::cout;
+using std::endl;
 //the algorithm keeps a global array for all tentative distance values
 //each processor is responsible for two sequential priority queues
 
@@ -65,6 +68,13 @@ class Graph{
         void clear(){
             adj.clear();
         }
+        void print(){
+            for(int i=1; i<adj.size(); i++){
+                for(int j=0; j<adj[i].size(); j++){
+                    std::cout << i << " " << adj[i][j].first << " " << adj[i][j].second << std::endl;
+                }
+            }
+        }
 };
 
 std::pair<vector<int>,vector<int>> parallel_dijkstra (Graph g, int source,
@@ -84,7 +94,7 @@ vector<std::mutex> mutex_vec, MinHeap queue);
 //four steps of a phse according to the paper:
 //step1: find the global minumum L of all elements in all Q_star queues
 //should be preformed in Ologp <= Ologn time 
-void parallel_coordinator(size_t num_threads,Graph g, int source){
+int parallel_coordinator(size_t num_threads,Graph g, int source, int destination){
     
     unsigned long const block_size = g.adj.size()/num_threads;//do we add -1 to vectors?
     // auto startIter = tent.begin();//I should make sure that start iter
@@ -184,6 +194,7 @@ void parallel_coordinator(size_t num_threads,Graph g, int source){
         //now I need to get out the finished queue, maybe also use lazy copy
         //to keep track of which nodes were already visited
     }
+    return tent[destination];
 }
 
 
@@ -258,3 +269,20 @@ void update_tent(Graph g, Tent tent, vector<pair<int, int> > buf_i, vector<std::
         mutex_vec[request.first].unlock();
     }
 }
+
+int main(int argc, char* argv[]){
+    if(argc<3){
+        cout<<"Usage: ./argv[0] <input file> <output file>"<<endl;
+        return 0;
+    }
+    int input[argc] = {0};
+    for(int i=0; i<argc; i++){
+        input[i] = atoi(argv[i+1]);
+    }
+    Graph g;
+    // int 
+    // g.generateGraph(input);
+    // g.read_graph("graph.txt");
+    auto start = std::chrono::high_resolution_clock::now();
+}
+
